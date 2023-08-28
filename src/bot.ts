@@ -3,6 +3,11 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+const limit = {
+  attack: 10,
+  delete: 100,
+};
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -30,7 +35,7 @@ client.on("messageCreate", async (message: Message) => {
   const users = message.mentions.users;
 
   if (content.startsWith("!attack")) {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < limit.attack; i++) {
       message.channel.send(
         `${users.map(
           (user) => `<@${user.id}>${user.globalName?.includes("hima") ? "ひまじん" : ""}`
@@ -40,7 +45,7 @@ client.on("messageCreate", async (message: Message) => {
   }
 
   if (content.startsWith("!cleanup")) {
-    message.channel.messages.fetch({ limit: 100 }).then(async (messages) => {
+    message.channel.messages.fetch({ limit: limit.delete }).then(async (messages) => {
       const botMessages = messages.filter((msg) => msg.author.bot);
       if (!botMessages.size) return;
 
@@ -53,8 +58,10 @@ client.on("messageCreate", async (message: Message) => {
         })
       );
 
-      if (botMessages.size > 100) {
-        message.channel.send(`まだ残ってるかも... 残り${botMessages.size - 100}件}`);
+      if (botMessages.size > limit.delete) {
+        message.channel.send(
+          `まだ残ってるかも... 残り${botMessages.size - limit.delete}件}`
+        );
       } else {
         message.channel.send(`掃除完了！`);
       }
@@ -63,8 +70,8 @@ client.on("messageCreate", async (message: Message) => {
 
   if (content.startsWith("!help")) {
     message.channel.send(`
-      - \`!attack @mention\` : **オワタぁ**をメンション付きで10回送信します(hima特別仕様)
-    \n- \`!cleanup\` : Botのメッセージを削除します(1回100件まで)
+      - \`!attack @mention\` : **オワタぁ**をメンション付きで${limit.attack}回送信します(hima特別仕様)
+    \n- \`!cleanup\` : Botのメッセージを削除します(1回${limit.delete}件まで)
     `);
   }
 });
